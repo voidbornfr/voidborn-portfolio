@@ -13,6 +13,7 @@ const navItems = [
     { name: "GATEWAY", path: "/" },
     { name: "ORIGIN", path: "/about" },
     { name: "ARCHIVE", path: "/projects" },
+    { name: "PLAYGROUND", path: "/playground" },
     { name: "TRANSMISSION", path: "/contact" },
 ];
 
