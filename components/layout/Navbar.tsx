@@ -14,6 +14,7 @@ const navItems = [
     { name: "ORIGIN", path: "/about" },
     { name: "ARCHIVE", path: "/projects" },
     { name: "PLAYGROUND", path: "/playground" },
+    { name: "ESCAPE", path: "/shadow-escape" },
     { name: "TRANSMISSION", path: "/contact" },
 ];
 

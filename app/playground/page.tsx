@@ -47,6 +47,7 @@ print("\\nBasic Statistics:")
 print(df.describe())
 `,
     sql: `-- Write SQL here
+DROP TABLE IF EXISTS users;
 CREATE TABLE users (id int, name text, role text);
 INSERT INTO users VALUES (1, 'Neo', 'The One');
 INSERT INTO users VALUES (2, 'Morpheus', 'Captain');
@@ -59,13 +60,19 @@ SELECT * FROM users;
 export default function PlaygroundPage() {
     const [language, setLanguage] = useState<Language>('python');
     const [code, setCode] = useState(DEFAULT_CODE['python']);
-    const [logs, setLogs] = useState<Array<{ type: 'log' | 'error' | 'warn' | 'info'; content: string; timestamp: number }>>([]);
+    const [logs, setLogs] = useState<Array<{
+        type: 'log' | 'error' | 'warn' | 'info' | 'table';
+        content: string;
+        timestamp: number;
+        tableData?: { columns: string[], rows: any[][] }
+    }>>([]);
     const [isRunning, setIsRunning] = useState(false);
     const [activeTab, setActiveTab] = useState<'code' | 'output'>('code');
 
     // Engine States
     const [pyodide, setPyodide] = useState<any>(null);
     const [sqlDb, setSqlDb] = useState<any>(null);
+    const [sqlEngine, setSqlEngine] = useState<any>(null);
     const [isPyodideLoading, setIsPyodideLoading] = useState(false);
     const [isSqlLoading, setIsSqlLoading] = useState(false);
 
@@ -78,8 +85,12 @@ export default function PlaygroundPage() {
         setLogs([]);
     }, [language]);
 
-    const addLog = useCallback((content: string, type: 'log' | 'error' | 'warn' | 'info' = 'log') => {
-        setLogs(prev => [...prev, { type, content, timestamp: Date.now() }]);
+    const addLog = useCallback((
+        content: string,
+        type: 'log' | 'error' | 'warn' | 'info' | 'table' = 'log',
+        tableData?: { columns: string[], rows: any[][] }
+    ) => {
+        setLogs(prev => [...prev, { type, content, timestamp: Date.now(), tableData }]);
     }, []);
 
     // --- EXECUTION LOGIC ---
@@ -172,6 +183,8 @@ export default function PlaygroundPage() {
             const SQL = await window.initSqlJs({
                 locateFile: (file: string) => `https://sql.js.org/dist/${file}`
             });
+
+            setSqlEngine(SQL);
             setSqlDb(new SQL.Database());
             addLog("SQL Database initialized in-memory.", 'info');
         } catch (e: any) {
@@ -179,27 +192,56 @@ export default function PlaygroundPage() {
         } finally {
             setIsSqlLoading(false);
         }
+
+
     };
 
     const executeSql = async () => {
-        if (!sqlDb) {
-            addLog("SQL Database not loaded yet.", 'warn');
+        if (!sqlEngine) {
+            addLog("SQL Engine not ready yet.", 'warn');
             return;
         }
+
+        let db = sqlDb;
+        // Always create a fresh DB for the "script" workflow to avoid "table exists" errors
         try {
-            const results = sqlDb.exec(code);
+            // Close old DB if exists to free memory
+            if (sqlDb) sqlDb.close();
+
+            db = new sqlEngine.Database();
+            setSqlDb(db);
+            addLog("Database reset for new execution.", 'info');
+        } catch (e: any) {
+            addLog(`Failed to reset database: ${e.message}`, 'error');
+            return;
+        }
+
+        try {
+            const results = db.exec(code);
             if (results.length === 0) {
                 addLog("Query executed successfully. No results returned.", 'info');
             } else {
                 results.forEach((res: any) => {
-                    addLog(`Result: ${JSON.stringify(res.columns)}`, 'info');
-                    res.values.forEach((row: any) => {
-                        addLog(JSON.stringify(row), 'log');
-                    });
+                    addLog('Query Result:', 'table', { columns: res.columns, rows: res.values });
                 });
             }
         } catch (e: any) {
             addLog(e.message, 'error');
+        }
+    };
+
+    const handleReset = async () => {
+        setLogs([]);
+        if (language === 'sql') {
+            setSqlDb(null);
+            // This will trigger the useEffect to re-init SQL checking !sqlDb
+            // But we need to make sure existing SQL script doesn't block.
+            // The useEffect checks `!sqlDb && !isSqlLoading`.
+            // Setting sqlDb to null matches `!sqlDb`.
+            // So it should trigger re-init automatically via the useEffect.
+            addLog("Resetting SQL Database...", 'info');
+        } else {
+            addLog("Logs cleared. Runtime state preserved.", 'info');
         }
     };
 
@@ -288,8 +330,16 @@ export default function PlaygroundPage() {
                         </div>
 
                         <button
+                            onClick={handleReset}
+                            className="p-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg transition-colors"
+                            title="Reset Runtime & Logs"
+                        >
+                            <RotateCcw size={16} />
+                        </button>
+
+                        <button
                             onClick={handleRun}
-                            disabled={isRunning || (language === 'python' && !pyodide) || (language === 'sql' && !sqlDb)}
+                            disabled={isRunning || (language === 'python' && !pyodide) || (language === 'sql' && !sqlEngine)}
                             className="flex items-center gap-2 px-6 py-2 bg-white text-black rounded-lg font-bold text-sm hover:bg-gray-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
