@@ -3,6 +3,7 @@ import { Orbitron, Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import AudioController from "@/components/layout/AudioController";
+import VoidAI from "@/components/ui/VoidAI";
 
 const orbitron = Orbitron({
   variable: "--font-orbitron",
@@ -40,6 +41,7 @@ export default function RootLayout({
         <SmoothScroll />
         <AudioController />
         {children}
+        <VoidAI />
       </body>
     </html>
   );

@@ -137,7 +137,7 @@ export default function HeroGateway() {
                         initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
                         animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                         transition={{ duration: 1.5, delay: 1.7, ease: "easeOut" }}
-                        className="text-text-muted mt-2 block"
+                        className="text-text-muted mt-2 block text-5xl md:text-9xl"
                     >
                         ARCHITECT
                     </motion.div>

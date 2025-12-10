@@ -53,7 +53,7 @@ export default function AudioController() {
     };
 
     return (
-        <div className="fixed bottom-8 right-8 z-50 mix-blend-difference">
+        <div className="fixed bottom-8 left-8 z-50 mix-blend-difference">
             <audio ref={audioRef} loop src="/background music/music.m4a" />
 
             <button
