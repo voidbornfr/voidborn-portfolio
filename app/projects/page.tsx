@@ -90,6 +90,21 @@ const PROJECTS = [
         images: [
             "/projects/koku no ko/Screenshot 2025-12-08 152948.png"
         ]
+    },
+    {
+        id: "08",
+        title: "VOIDANIME-VERSE",
+        category: "DESKTOP APP",
+        description: "A powerful desktop application for streaming anime and reading manga.",
+        link: "https://github.com/voidbornfr/VoidAnime-Desktop/releases",
+        images: [
+            "/projects/voidanime verse/Screenshot 2025-12-24 145952.png",
+            "/projects/voidanime verse/Screenshot 2025-12-24 150030.png",
+            "/projects/voidanime verse/Screenshot 2025-12-24 150038.png",
+            "/projects/voidanime verse/Screenshot 2025-12-24 150046.png",
+            "/projects/voidanime verse/Screenshot 2025-12-24 150054.png",
+            "/projects/voidanime verse/Screenshot 2025-12-24 150118.png"
+        ]
     }
 ];
 
